@@ -1,0 +1,18 @@
+# OS 垃圾
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+
+# Python
+__pycache__/
+*.pyc
+
+# ⚠️ 真实订阅地址 / token 绝不入库
+# 若本地测试需要填真实 token，请用不解进的副本
+*.local.conf
+secrets/
