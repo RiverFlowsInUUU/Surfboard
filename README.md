@@ -12,8 +12,46 @@ Surfboard 自称「兼容 Surge 配置」，实际是**兼容子集** —— 语
 
 | 路径 | 内容 |
 |:--|:--|
+| [`profiles/`](profiles/) | **现役配置**：`sb-lazy.conf`（懒人版）· `sb-routing.conf`（分流版） |
 | [`docs/01-兼容性排查.md`](docs/01-兼容性排查.md) | 一次完整导入失败的排查全过程：控制变量方法、七个被证伪的猜想、真因与自检清单 |
+| [`tools/build_surfboard.py`](tools/build_surfboard.py) | 从 Surge 配置生成 Surfboard 兼容版的转换脚本 |
 | [`probe/`](probe/) | 排查期间构建的控制变量样本，可直接复用为回归样本 |
+
+---
+
+## 怎么用
+
+### 直接用现役配置
+
+两份 `profiles/*.conf` 是从 Surge 正式版转换而来，已去掉 Surfboard 不支持的语法。
+**导入前只需改一处**：把 `[Proxy Group]` 里 `Airport` 那行的 `policy-path`
+换成你自己的真实订阅地址（且必须是 Surge 格式的订阅）。
+
+```
+Airport = select, policy-path=<换成你的 Surge 格式订阅地址>, update-interval=86400, hidden=true
+```
+
+### 自己重新生成
+
+仓库更新后想重新转换：
+
+```bash
+python tools/build_surfboard.py --all <Surge 仓库根> profiles
+```
+
+### 转换做了什么
+
+| 处理 | 原因 |
+|:--|:--|
+| 首行 `#! version=` → 普通注释 | Surfboard 把 `#!` 当特殊指令头解析 |
+| 删 `[URL Rewrite]` 段 | 官方明示不支持 |
+| 删 `[SSID Setting]` 段 | Android 无此概念 |
+| 删规则行的 `pre-matching` / `extended-matching` | Surge 专有参数 |
+| 删全部 `icon-url` | Surfboard 不认，写了会被忽略 |
+| 删 `[General]` 新式键 | Surfboard 无对应实现（如 `encrypted-dns-server`、`block-quic`） |
+
+⚠️ **不动 `policy-path`** —— Surfboard 支持它，但导入时会真去拉取，
+地址无效即报 `connection closed`。这是订阅侧的事，脚本无法也**不应**代劳。
 
 ---
 
