@@ -43,14 +43,16 @@ Airport = select, policy-path=<换成你的 Surge 格式订阅地址>, update-in
 |:--|:--|:--|
 | ⚡ `smart` 策略组 | ✅ 降级为 auto | 官方 release notes：`Support Smart proxy group type(fallback to auto)` |
 | 🛰️ `policy-path` 订阅槽 | ✅ | **导入时真去拉取**，失败即中断（本仓一半篇幅在讲这个） |
-| 📜 `RULE-SET` + `update-interval` | ✅ | 支持后台自动刷新 |
+| 📜 `RULE-SET` + `update-interval` | ✅ | 支持后台自动刷新（2.35.1 起 policy-path/DOMAIN-SET 同样支持） |
 | 🔗 `underlying-proxy` 链式代理 | ✅ | — |
 | 🚀 Hysteria2 / AnyTLS / Snell / SS2022 / TUIC v5 | ✅ | 新版均已支持 |
 | 🖼️ `icon-url` | ❌ 静默忽略 | 写了不报错，但没图标 |
 | 🔀 `[URL Rewrite]` 段 | ❌ 不支持 | 官方明示 |
 | 📶 `[SSID Setting]` 段 | ❌ 无此概念 | 它有自研 `subnet` 组类型，语法不同 |
 | 🛡️ Surge 4/5 的 DNS 加固键 | ❌ 无对应实现 | `encrypted-dns-server` / `block-quic` 等 |
-| 🎭 `USER-AGENT` · `URL-REGEX` 规则 | ❌ 不支持 | 官方明示 |
+| 🎭 `USER-AGENT` 规则 | ✅ 2.29.2+ | 需 Android 10+ 且开启 VPN HTTP Proxy（旧结论「不支持」已过时） |
+| 🎭 `URL-REGEX` 规则 | ❌ 不支持 | 官方明示 |
+| 🔇 `block-quic`（代理参数） | ✅ 2.31.1+ | `[General]` 级同名键仍无实现 |
 
 ---
 
@@ -82,6 +84,7 @@ python tools/build_surfboard.py --all <Self-Configuration 仓库根> profiles
 | 路径 | 内容 |
 |:--|:--|
 | [`docs/01-兼容性排查.md`](docs/01-兼容性排查.md) | 一次导入失败的完整排查：控制变量二分法 · 七个被证伪的猜想 · 订阅格式三种失败形态 · 导入前自检清单 |
+| [`docs/02-官方更新日志.md`](docs/02-官方更新日志.md) | 官方更新日志摘要（141 个 release）：协议/配置能力时间线 · 旧结论订正 · 自刷新方法 |
 | [`tools/build_surfboard.py`](tools/build_surfboard.py) | 转换脚本 |
 | [`probe/`](probe/) | 排查用的控制变量样本，可复用为回归样本 |
 
