@@ -69,8 +69,17 @@ Airport = select, policy-path=<换成你的 Surge 格式订阅地址>, update-in
 上游 Surge 配置更新后：
 
 ```bash
-python tools/build_surfboard.py --all <Self-Configuration 仓库根> profiles
+python tools/build_surfboard.py --all <self-conf 仓库根> profiles
 ```
+
+> ⚠️ **真源于 2026-10-10 从 `Self-Configuration` 迁到 [`self-conf`](https://github.com/RiverFlowsInUUU/self-conf)**
+> （三内核合一的新仓；`Self-Configuration` 已停更于 2026-10-07）。本仓产物内的所有
+> `raw.githubusercontent.com/.../rules/*.list` 引用同步指向 `self-conf`。
+>
+> ⚠️⚠️ **`--all` 会整份重写两个产物，冲掉本仓的手工适配** —— 已实测踩过：
+> 版本头注会从 `lazy_v2.0.5` / `routing_v4.0.5` 退回上游的 `v1.0.0`，
+> 且「Surfboard 不支持 `policy-priority` / `hijack-dns`」那批**手工修正过的注释**会被还原成 Surge 原文。
+> ⇒ 重新生成后**必须逐行 review diff**，或只对目标产物做外科手术式编辑（推荐后者）。
 
 转换做六件事：
 

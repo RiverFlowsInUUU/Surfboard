@@ -39,10 +39,12 @@ DROP_GENERAL = (
     "loglevel", "hijack-dns",  # 语法参考 [General] 键表未收录
 )
 
-# Surfboard 无内置 RULE-SET：SYSTEM → 本仓自托管快照（与 Egern 侧同 URL）
+# Surfboard 无内置 RULE-SET：SYSTEM → 自托管快照（与 Egern 侧同 URL）
+# ⚠️ 2026-10-10 起真源改为 `self-conf`（三内核合一的新仓）：
+#    上游 `Self-Configuration` 已停更于 2026-10-07，本仓产物改跟 `self-conf`。
 APPLE_SYSTEM_URL = (
     "https://raw.githubusercontent.com/RiverFlowsInUUU/"
-    "Self-Configuration/main/rules/apple_system.list"
+    "self-conf/main/rules/apple_system.list"
 )
 
 HEADER = """# ============================================================================
