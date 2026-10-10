@@ -5,11 +5,16 @@
     python tools/build_surfboard.py <surge-profile.conf> <out.conf> [--title "..."]
     python tools/build_surfboard.py --all <surge-repo-root> <out-dir>
 
-做四件事（Surfboard 不支持或会被忽略的，一律删掉）：
+做六件事（Surfboard 不支持或会被忽略的，一律删掉/替换）：
   1. 首行 `#! version=` → 普通注释（Surfboard 把 `#!` 当特殊指令头解析）
   2. 删 [URL Rewrite] / [SSID Setting] 两段（前者官方明示不支持，后者无对应概念）
   3. 删规则行上的 pre-matching / extended-matching（Surge 专有参数）
   4. 删全部 icon-url、以及 [General] 里 Surfboard 无对应实现的新式键
+  5. 删 FINAL 上的 dns-failed（语法参考：FINAL 只接受 FINAL,{policy}）
+  6. RULE-SET 行上的 no-resolve（语法参考：no-resolve 仅 IP-CIDR/GEOIP 合法）
+
+语法依据：getsurfboard.com/docs/ai-profile-guide/reference（提炼自解析器源码，
+未收录即不支持）。详见 docs/01-兼容性排查.md。
 
 ⚠️ 不改的：policy-path（Surfboard 支持，但**导入时会真去拉取**，
    地址无效即报 connection closed / HTTP 400 —— 这是配置之外的事，见 docs/01）。
@@ -31,6 +36,13 @@ DROP_GENERAL = (
     "proxy-restricted-to-lan", "gateway-restricted-to-lan", "all-hybrid",
     "wifi-assist", "use-local-host-item-for-proxy", "read-etc-hosts",
     "exclude-simple-hostnames", "geoip-maxmind-url",
+    "loglevel", "hijack-dns",  # 语法参考 [General] 键表未收录
+)
+
+# Surfboard 无内置 RULE-SET：SYSTEM → 本仓自托管快照（与 Egern 侧同 URL）
+APPLE_SYSTEM_URL = (
+    "https://raw.githubusercontent.com/RiverFlowsInUUU/"
+    "Self-Configuration/main/rules/apple_system.list"
 )
 
 HEADER = """# ============================================================================
@@ -87,6 +99,46 @@ def convert(src_path, title="Surge 配置"):
             continue
         out.append(ln)
     s = "\n".join(out)
+
+    # 6) FINAL 的 dns-failed 修饰（语法参考：FINAL 只接受 FINAL,{policy}）
+    s = re.sub(r"^(FINAL,[A-Za-z][\w-]*),dns-failed$", r"\1", s, flags=re.M)
+
+    # 7) policy-priority 参数（语法参考策略组参数表未收录，仅 Surge 支持）
+    s = re.sub(r", ?policy-priority=\S+", "", s)
+
+    # 8) RULE-SET,SYSTEM → 本仓自托管快照
+    s = re.sub(
+        r"^RULE-SET,SYSTEM,([A-Za-z][\w-]*)",
+        "RULE-SET," + APPLE_SYSTEM_URL + r",\1," + '"update-interval=604800"',
+        s,
+        flags=re.M,
+    )
+
+    # 9) RULE-SET,LAN → 展开内网段（语法参考：RULE-SET 只接受 URL）
+    lan_lines = [
+        "IP-CIDR,10.0.0.0/8,{p},no-resolve",
+        "IP-CIDR,100.64.0.0/10,{p},no-resolve",
+        "IP-CIDR,127.0.0.0/8,{p},no-resolve",
+        "IP-CIDR,169.254.0.0/16,{p},no-resolve",
+        "IP-CIDR,172.16.0.0/12,{p},no-resolve",
+        "IP-CIDR,192.0.0.0/24,{p},no-resolve",
+        "IP-CIDR,192.168.0.0/16,{p},no-resolve",
+        "IP-CIDR,198.18.0.0/15,{p},no-resolve",
+        "IP-CIDR,224.0.0.0/4,{p},no-resolve",
+        "IP-CIDR,240.0.0.0/4,{p},no-resolve",
+        "IP-CIDR6,::1/128,{p},no-resolve",
+        "IP-CIDR6,fc00::/7,{p},no-resolve",
+        "IP-CIDR6,fe80::/10,{p},no-resolve",
+        "IP-CIDR6,ff00::/8,{p},no-resolve",
+    ]
+
+    def _lan(m):
+        return "\n".join(l.format(p=m.group(1)) for l in lan_lines)
+
+    s = re.sub(r"^RULE-SET,LAN,([A-Za-z][\w-]*)(?:,no-resolve)?$", _lan, s, flags=re.M)
+
+    # 10) RULE-SET 行上的 no-resolve（语法参考：仅 IP-CIDR/GEOIP 合法）
+    s = re.sub(r"^(RULE-SET,[^\n]*?),no-resolve$", r"\1", s, flags=re.M)
 
     return HEADER.format(title=title) + s.lstrip("\n")
 

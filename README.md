@@ -39,6 +39,9 @@ Airport = select, policy-path=<换成你的 Surge 格式订阅地址>, update-in
 
 官方 manual 停更约四年，其「支持的协议」「不支持的功能」两节已严重过时 —— 本仓只登记**实测结论**。
 
+> 判断某条语法是否合法的**最高权威**：官方 [Profile Syntax Reference](https://getsurfboard.com/docs/ai-profile-guide/reference)
+> （声明提炼自解析器源码，「未收录即不支持」，2026-10-10 起本仓据此修正了 6 类构造，见 docs/01 §3.4）。
+
 | | <div align="center">Surfboard</div> | 说明 |
 |:--|:--|:--|
 | ⚡ `smart` 策略组 | ✅ 降级为 auto | 官方 release notes：`Support Smart proxy group type(fallback to auto)` |
@@ -53,6 +56,11 @@ Airport = select, policy-path=<换成你的 Surge 格式订阅地址>, update-in
 | 🎭 `USER-AGENT` 规则 | ✅ 2.29.2+ | 需 Android 10+ 且开启 VPN HTTP Proxy（旧结论「不支持」已过时） |
 | 🎭 `URL-REGEX` 规则 | ❌ 不支持 | 官方明示 |
 | 🔇 `block-quic`（代理参数） | ✅ 2.31.1+ | `[General]` 级同名键仍无实现 |
+| 📛 `RULE-SET,SYSTEM` / `LAN` 内置集 | ❌ 不支持 | 语法参考明示；改引自托管快照 / 内联 IP-CIDR |
+| 🧩 `FINAL,…,dns-failed` 修饰 | ❌ 不支持 | FINAL 只接受 `FINAL,{policy}` |
+| 🔁 RULE-SET 行上的 `no-resolve` | ❌ 不支持 | 仅 IP-CIDR / GEOIP 接受 |
+| 🪤 `hijack-dns` / `loglevel` | ❌ 无对应实现 | [General] 键表未收录 |
+| 📊 策略组 `policy-priority` | ❌ 不支持 | 参数表未收录；低倍率加权仅 Surge 侧生效 |
 
 ---
 
